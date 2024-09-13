@@ -1,0 +1,130 @@
+#Sandra Walker
+# 1991144
+# Chatbot for references when my computer refused to run
+# Professor week2 for guidences
+
+import mysql.connector
+from mysql.connector import Error
+
+# Establish a connection to the MySQL database
+def DBconnection():
+    try:
+        con = mysql.connector.connect(
+            host='hostname',
+            user='username',
+            password='pwd',
+            database='dbname'
+        )
+        if con.is_connected():
+            print("Connection successful")
+            return con
+    except Error as e:
+        print(f"Error: {e}")
+        return None
+class DBconnection:
+    def __init__(self, host, user, password, database):
+        self.host = host
+        self.user = user
+        self.password = password
+        self.database = database
+        self.connection = None
+    
+    def connect(self):
+        try:
+            self.connection = mysql.connector.connect(
+                host=self.host,
+                user=self.user,
+                password=self.password,
+                database=self.database
+            )
+            if self.connection.is_connected():
+                print("Connected to MySQL database")
+        except mysql.connector.Error as e:
+            print(f"Error: {e}")
+    
+    def close(self):
+        if self.connection.is_connected():
+            self.connection.close()
+            print("Connection closed")
+
+# Correct usage
+mycon = DBconnection('cis3368db.c5xe233yagcc.us-east-1.rds.amazonaws.com', 'admin', 'Test#001', 'cis3368db')
+mycon.connect()
+
+sql = "select * from covidcases"
+
+# Add cases to the database
+def add_covidcases(cursor, connection):
+    countryname = input("Enter country name: ")
+    year = int(input("Enter year: "))
+    totalcases = int(input("Enter total cases: "))
+    deaths = int(input("Enter deaths: "))
+    recovered = int(input("Enter recovered cases: "))
+    
+    sql = "insert into covidcases (countryname, year, totalcases, deaths, recovered)  VALUES (%$, %$, %$, %$, %$)"
+    
+    data = (countryname, year, totalcases, deaths, recovered)
+    
+    try:
+        cursor.execute(sql, data)
+        connection.commit()
+        print("Cases added successfully.")
+    except Error as e:
+        print(f"Error: {e}")
+
+# Output all cases from the database
+def output_all_covidcases(cursor):
+    sql= "SELECT * FROM covidcases"
+    try:
+        cursor.execute(sql)
+        rows = cursor.fetchall()
+        if rows:
+            for row in rows:
+                print(row)
+        else:
+            print("No data found.")
+    except Error as e:
+        print(f"Error: {e}")
+
+# Main function to display menu and handle user input
+def main():
+    connection = DBconnection()
+    if not connection:
+        return
+
+    cursor = connection.cursor()
+    
+    while True:
+        print("\nMENU")
+        print("a - Add cases")
+        print("o -  Output all cases in console")
+        print("q - Quit")
+        
+        choice = input("Choose an option: ").lower()
+        
+        if choice == 'a':
+            add_covidcases(cursor, connection)
+        elif choice == 'o':
+            output_all_covidcases(cursor)
+        elif choice == 'q':
+            print("Quitting...")
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+    cursor.close()
+    connection.close()
+
+#if __name__ == "__main__":
+ #   main()
+
+
+
+
+
+
+
+
+
+    
+    
